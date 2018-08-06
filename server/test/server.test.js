@@ -108,3 +108,47 @@ describe('GET /todos/:_id', () => {
       .end(done)
   });
 });
+
+describe('DELETE /todos/:_id', () => {
+  var deletedId = new ObjectID();
+
+  it('should be an invalid id', (done) => {
+    request(app)
+      .delete('/todos/123')
+      .expect(400)
+      .expect((res) => {
+        expect(res.text).toBe("Id is not valid")
+      })
+      .end(done)
+  });
+
+  it('should not find the non existant id', (done) => {
+    request(app)
+      .delete(`/todos/${new ObjectID()}`)
+      .expect(404)
+      .expect((res) => {
+        expect(res.text).toBe("No Todo with that ID found")
+      })
+      .end(done)
+  });
+
+  it('should find and delete the valid id', (done) => {
+    var text = "Im going to be deleted"
+    var dyingTodo = new Todo({_id:deletedId,text});
+    dyingTodo.save();
+    request(app)
+      .delete(`/todos/${deletedId}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.todo.text).toBe(text)
+        expect(ObjectID(res.body.todo._id)).toEqual(deletedId)
+      })
+      .end((err,res) => {
+        Todo.findById(deletedId).then((todo) => {
+          expect(todo).toBeFalsy();
+          done();
+        }).catch((e) => done(e));
+      })
+  });
+
+});
