@@ -75,7 +75,6 @@ app.patch('/todos/:_id', (req,res) => {
   }
 
   Todo.findByIdAndUpdate(_id,{$set: body},{new: true}).then(todo => {
-    console.log(_id);
     if(!todo){
       return res.status(404).send();
     }
